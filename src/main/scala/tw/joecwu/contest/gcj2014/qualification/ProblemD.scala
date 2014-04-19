@@ -12,13 +12,13 @@ import java.text.DecimalFormat
 object ProblemD extends Logging {
   case class Questions(q:Int, size:Int, a:List[Double], b:List[Double])
 
-   val output = new PrintWriter(new File("resultD.out"))
+   val output = new PrintWriter(new File("2014q_resultD.out"))
 
    def main(args : Array[String]) {
      info("Start Fighting!!!")
 
 //     val file = Source.fromURL(getClass().getResource("/smallD.in"))
-     val file = Source.fromURL(getClass().getResource("/largeD.in"))
+     val file = Source.fromURL(getClass().getResource("/2014/largeD.in"))
 
      val reader = file.bufferedReader()
 

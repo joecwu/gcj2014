@@ -16,13 +16,13 @@ object ProblemC extends Logging {
 
   case class Questions(q:Int, r:Int, c:Int, m:Int)
 
-  val output = new PrintWriter(new File("resultC.out"))
+  val output = new PrintWriter(new File("2014q_resultC.out"))
 
   def main(args : Array[String]) {
     info("Start Fighting!!!")
 
 //    val file = Source.fromURL(getClass().getResource("/smallC.in"))
-    val file = Source.fromURL(getClass().getResource("/largeC.in"))
+    val file = Source.fromURL(getClass().getResource("/2014/largeC.in"))
 
     val reader = file.bufferedReader()
 
