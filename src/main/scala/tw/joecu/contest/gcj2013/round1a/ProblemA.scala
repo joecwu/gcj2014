@@ -32,7 +32,7 @@ object ProblemA extends Logging {
     qs.map{ q=>
       info(s"Q #${q.q} => ${q.r} ${q.t}")
       val result = solveQuestions(q)
-      output.write(s"Case #${q.q}: ${result}")
+      output.write(s"Case #${q.q}: ${result}\r\n")
     }
 
     file.close()
@@ -47,17 +47,9 @@ object ProblemA extends Logging {
   }
 
   def solveQuestions(q:Questions) : BigInt = {
-    var rt = q.t
-    var i : BigInt = 0
-    while(rt>0){
-      val cost = q.r * (q.r+1) * Pi
-      if(rt>=cost){
-        rt = rt - cost
-        i+=1
-      }else{
-        rt = -1
-      }
-    }
-    i
+    val base = (q.r+1).pow(2) - q.r.pow(2)
+    debug(s"r:${q.r} t:${q.t} base=>$base")
+
+    BigInt(math.ceil((((q.t / Pi) - base ) / 4).doubleValue).toLong+1)
   }
 }
