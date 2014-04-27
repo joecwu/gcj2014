@@ -5,6 +5,9 @@ import java.io.{BufferedReader, File, PrintWriter}
 import scala.io.Source
 import scala.Array
 import scala.math._
+import scalaz._
+import Scalaz._
+
 /**
  * Created by joewu on 4/19/14.
  */
@@ -18,13 +21,11 @@ object ProblemA extends Logging {
     info("Start Fighting!!!")
 
     //    val file = Source.fromFile(args(0))
-    val file = Source.fromURL(getClass().getResource("/2013/smallA.in"))
+    val file = Source.fromURL(getClass().getResource("/2013/largeA.in"))
 
     val reader = file.bufferedReader()
 
     val total = reader.readLine().toInt
-
-    info(s"xxxxxx cycle needs paint:"+((BigDecimal("1")*2*BigDecimal("707106780"))+triangularNum(BigDecimal("707106780")*2-1)))
 
     info(s"Case Count: $total")
 
@@ -35,7 +36,7 @@ object ProblemA extends Logging {
       info(s"Q #${q.q} => ${q.r} ${q.t}")
       val result = solveQuestions(q)
       info(s"Case #${q.q}: ${result}")
-      info(s"$result cycle needs paint:"+((q.r*2*BigDecimal(result))+triangularNum(BigDecimal(result)*2-1)))
+      info(s"$result cycle needs paint:"+calNum(q.r,result))
       output.write(s"Case #${q.q}: ${result}\r\n")
     }
 
@@ -52,19 +53,23 @@ object ProblemA extends Logging {
 
   def solveQuestions(q:Questions) : BigInt = {
     debug(s"r:${q.r} t:${q.t}")
-    //val base = (q.r+1).pow(2) - q.r.pow(2)
-    //debug(s"r:${q.r} t:${q.t} base=>$base")
 
-    //BigInt(math.ceil((((q.t / Pi) - base ) / 4).doubleValue).toLong+1)
-
-    val tmp = (q.t/Pi)-(2*q.r)
-    BigInt(math.floor(((BigDecimalMath.sqrt(tmp*8+1)+1)/4).doubleValue).toLong)
-
+    var left = BigInt(0)
+    var right = BigInt(2000000000)
+    while((right-left)>1){
+      val mid = (right+left)/2
+      val need = calNum(q.r,mid)
+      (q.t>=need) ? (left=mid) | (right=mid)
+      debug(s"Q(${q.q},${q.r},${q.t}) L:$left, R:$right, M:$mid => need:$need")
+    }
+    left
   }
 
-//  def powCount(n:BigDecimal) : BigDecimal = {
-//    n*(n+1)*(2*n+1)/6
-//  }
+  def calNum(r:BigDecimal, n:BigInt) = {
+    val a = (r*2*BigDecimal(n))+triangularNum(BigDecimal(n)*2-1)
+    debug("calNum:"+a.doubleValue().toString)
+    a
+  }
 
   def triangularNum(n:BigDecimal) : BigDecimal = {
     (n.pow(2)+n)/2

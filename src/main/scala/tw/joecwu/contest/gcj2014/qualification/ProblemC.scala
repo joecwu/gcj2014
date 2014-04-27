@@ -22,7 +22,7 @@ object ProblemC extends Logging {
     info("Start Fighting!!!")
 
 //    val file = Source.fromURL(getClass().getResource("/smallC.in"))
-    val file = Source.fromURL(getClass().getResource("/2014/largeC.in"))
+    val file = Source.fromURL(getClass().getResource("/2014/q/largeC.in"))
 
     val reader = file.bufferedReader()
 

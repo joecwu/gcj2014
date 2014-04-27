@@ -1,4 +1,4 @@
-name := "google-code-jam-q"
+name := "google-code-jam-2014"
 
 version := "1.0"
 
@@ -30,4 +30,5 @@ libraryDependencies += "org.slf4j" % "log4j-over-slf4j" % "1.7.1"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.1"
 
+libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.0.6"
 //atmosSettings

@@ -18,7 +18,7 @@ object ProblemD extends Logging {
      info("Start Fighting!!!")
 
 //     val file = Source.fromURL(getClass().getResource("/smallD.in"))
-     val file = Source.fromURL(getClass().getResource("/2014/largeD.in"))
+     val file = Source.fromURL(getClass().getResource("/2014/q/largeD.in"))
 
      val reader = file.bufferedReader()
 
