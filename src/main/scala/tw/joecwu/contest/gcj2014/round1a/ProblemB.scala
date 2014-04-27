@@ -30,11 +30,18 @@ object ProblemB extends Logging {
     var i = 0;
     val qs = {for( i <- 1 to total) yield parseQuestions(i, reader)}.toList
 
-    qs.map{ q=>
-      info(s"Q #${q.q} => ${q.r} ${q.t}")
+    qs.par.map{ q=>
       val result = solveQuestions(q)
-      info(s"Case #${q.q}: ${result}")
-      output.write(s"Case #${q.q}: ${result}\r\n")
+      result
+    }.toList.sortWith((a,b)=>a._1.q<b._1.q).map{ r =>
+      r match {
+        case (q:Questions,result:String) => {
+          info(s"Q #${q.q} => ${q.r} ${q.t}")
+          info(s"Case #${q.q}: ${result}")
+          output.write(s"Case #${q.q}: ${result}\r\n")
+        }
+        case _ => error("Unknown result type.")
+      }
     }
 
     file.close()
@@ -48,9 +55,9 @@ object ProblemB extends Logging {
     Questions(i,BigDecimal(line(0)),BigDecimal(line(1)))
   }
 
-  def solveQuestions(q:Questions) : BigInt = {
+  def solveQuestions(q:Questions) : (Questions,String) = {
     debug(s"r:${q.r} t:${q.t}")
 
-    BigInt(0)
+    (q,"")
   }
 }

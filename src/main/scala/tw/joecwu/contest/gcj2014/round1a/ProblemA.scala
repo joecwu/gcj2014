@@ -12,14 +12,14 @@ import Scalaz._
  * Created by joewu on 4/25/14.
  */
 object ProblemA extends Logging {
-  case class Questions(q:Int, n:Int, l:Int, init:Array[String], target:Array[String])
+  case class Questions(q:Int, n:Int, l:Int, init:Array[Long], target:Array[Long])
 
 
   val output = new PrintWriter(new File("2014r1a_resultA.out"))
 
   def main(args : Array[String]) {
     info("Start Fighting!!!")
-    val file = Source.fromURL(getClass().getResource("/2014/r1a/smallA.in"))
+    val file = Source.fromURL(getClass().getResource("/2014/r1a/largeA.in"))
 
     val reader = file.bufferedReader()
 
@@ -30,11 +30,18 @@ object ProblemA extends Logging {
     var i = 0;
     val qs = {for( i <- 1 to total) yield parseQuestions(i, reader)}.toList
 
-    qs.map{ q=>
-      info(s"Q #${q.q} => ${q.n} ${q.l}")
+    qs.par.map{ q=>
       val result = solveQuestions(q)
-      info(s"Case #${q.q}: ${result}")
-      output.write(s"Case #${q.q}: ${result}\r\n")
+      result
+    }.toList.sortWith((a,b)=>a._1.q<b._1.q).map{ r =>
+      r match {
+        case (q:Questions,result:String) => {
+          info(s"Q #${q.q} => ${q.n} ${q.l}")
+          info(s"Case #${q.q}: ${result}")
+          output.write(s"Case #${q.q}: ${result}\r\n")
+        }
+        case _ => error("Unknown result type.")
+      }
     }
 
     file.close()
@@ -44,77 +51,77 @@ object ProblemA extends Logging {
   def parseQuestions(i: Int, reader: BufferedReader) = {
 
     val line1 = reader.readLine().split(' ')
-    val init = reader.readLine().split(' ')
-    val target = reader.readLine().split(' ')
+    val init = reader.readLine().split(' ').map{java.lang.Long.parseLong(_,2)}
+    val target = reader.readLine().split(' ').map{java.lang.Long.parseLong(_,2)}
 
     Questions(i,line1(0).toInt,line1(1).toInt,init,target)
   }
 
-  def solveQuestions(q:Questions) : String = {
+  def solveQuestions(q:Questions) : (Questions,String) = {
     debug(s"n:${q.n} l:${q.l}")
 
-    val sortedTarget = q.target.toList.sortWith((a,b)=>a>b).toArray
+    val sortedTarget = q.target.sorted
+    val sortedInit = q.init.sorted
     debug("Sorted Target:"+sortedTarget.mkString(","))
+    debug("Sorted Init:"+sortedInit.mkString(","))
 
-    var o = q.init.toList.sortWith((a,b)=>a>b).toArray
-//    var count = 0
-    if(checkSame(sortedTarget,o)) return "0"
+    // 0 case
+    if(checkSame(sortedTarget,sortedInit)) return (q,"0")
 
-    val result = sortedTarget.map{ s =>
-      var count = Int.MaxValue
-      for(i <- 0 to o.length-1){
-        val sample = o(i)
-        val cPositions = diff(s,sample)
-        debug("diff:"+cPositions.mkString(","))
-        val result = o.map{ i =>
-          var tmp = i
-          cPositions.map{ p =>
-            tmp = updateChar(tmp,p)
-          }
-          tmp
-        }.sortWith((a,b)=>a>b).toArray
-        if(checkSame(sortedTarget,result))
-          count = min(count,cPositions.length)
-      }
-      count
-    }.sortWith((a,b)=>a<b)(0)
 
-    if(result.equals(Int.MaxValue))
-      "NOT POSSIBLE"
+    debug("Target:"+sortedTarget.map{ i => java.lang.Long.toString(i,2)+s"(${bStrToLong(java.lang.Long.toString(i,2))})"}.mkString(","))
+    debug("Init  :"+sortedInit.map{ i => java.lang.Long.toString(i,2)+s"(${bStrToLong(java.lang.Long.toString(i,2))})"}.mkString(","))
+
+    val diffArray = (for(i <- 0 to sortedTarget.length-1) yield {
+      sortedTarget(i) ^ sortedInit(i)
+    }).toList
+
+    debug("XOR   :"+diffArray.map{ i => java.lang.Long.toString(i,2)+s"(${bStrToLong(java.lang.Long.toString(i,2))})"}.mkString(","))
+
+    var count = Int.MaxValue
+    // take each one as base to switch all items
+    sortedTarget.foreach{ t =>
+      val diff = t ^ sortedInit(0)
+      if(sortedInit.map{_ ^ diff}.sorted.deep == sortedTarget.deep)
+        count = min(count,bitCount(diff))
+    }
+
+    if(count.equals(Int.MaxValue))
+      (q,"NOT POSSIBLE")
     else
-      result.toString
+      (q,count.toString)
 
-    //    var aa = q.init.toList.sortWith((a,b)=>a>b).toArray
-//    for(i <- 0 to q.l-1){
-//      aa = o.map{ n =>
-//        val newN = if(n(i)=='0') '1' else '0'
-//        updateChar(n,i,newN)
-//      }.sortWith((a,b)=>a>b).toArray
-//      count = 1
-//      if(checkSame(sortedTarget,aa)) return count.toString
-//    }
-//
-//    for(i <- 0 to q.l-1){
-//      o = o.map{ n =>
-//        val newN = if(n(i)=='0') '1' else '0'
-//        updateChar(n,i,newN)
-//      }.sortWith((a,b)=>a>b).toArray
-//      count = i+1
-//      if(checkSame(sortedTarget,o)) return count.toString
-//      for(y <- i+1 to q.l-1){
-//        debug(s"i:$i,y:$y")
-//        val bb = o.map{ n =>
-//          val newN = if(n(y)=='0') '1' else '0'
-//          updateChar(n,y,newN)
+    // Impossible case
+//    if()
+
+
+//    var o = q.init.toList.sortWith((a,b)=>a>b).toArray
+////    var count = 0
+//    if(checkSame(sortedTarget,o)) return "0"
+
+//    val result = sortedTarget.map{ s =>
+//      var count = Int.MaxValue
+//      for(i <- 0 to o.length-1){
+//        val sample = o(i)
+//        val cPositions = diff(s,sample)
+//        debug("diff:"+cPositions.mkString(","))
+//        val result = o.map{ i =>
+//          var tmp = i
+//          cPositions.map{ p =>
+//            tmp = updateChar(tmp,p)
+//          }
+//          tmp
 //        }.sortWith((a,b)=>a>b).toArray
-//        debug("AA:"+o.mkString(","))
-//        debug("BB:"+bb.mkString(","))
-//        count = count + 1
-//        if(checkSame(sortedTarget,bb)) return count.toString
-//
+//        if(checkSame(sortedTarget,result))
+//          count = min(count,cPositions.length)
 //      }
-//    }
-//    "NOT POSSIBLE"
+//      count
+//    }.sortWith((a,b)=>a<b)(0)
+//
+//    if(result.equals(Int.MaxValue))
+//      "NOT POSSIBLE"
+//    else
+//      result.toString
   }
 
   def updateChar(s:String,p:Int) : String = {
@@ -129,20 +136,27 @@ object ProblemA extends Logging {
     }
   }
 
-  def checkSame(a:Array[String], b:Array[String]) : Boolean = {
-    for(i <- 0 to a.length-1){
-      if(!a(i).equals(b(i))) return false
-    }
-    true
+  def checkSame(a:Array[Long], b:Array[Long]) : Boolean = {
+    a.deep == b.deep
   }
 
-  def diff(a:String, b:String) : List[Int] = {
-    val aa = for(i <- 0 to a.length-1) yield {
-      if(!a(i).equals(b(i)))
-        Some(i)
-      else
-        None
-    }
-    aa.toList.flatten
+  def diffCount(a:Long, b:Long) : Int = {
+    java.lang.Long.toString((a ^ b),2).count{_.equals('1')}
+  }
+
+  def bStr(a:Long) = {
+    java.lang.Long.toString(a,2)
+  }
+
+  def bStrToLong(str:String) = {
+    java.lang.Long.parseLong(str,2)
+  }
+
+  def bitCount(str:String) = {
+    str.count{_.equals('1')}
+  }
+
+  def bitCount(a:Long) = {
+    java.lang.Long.bitCount(a)
   }
 }
